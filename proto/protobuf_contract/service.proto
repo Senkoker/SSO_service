@@ -1,0 +1,44 @@
+syntax = "proto3";
+package auth;
+option go_package = "sso.v1:ssov1";
+
+service Auth {
+  rpc Register(Registrequest) returns (Registresponse);
+  rpc Login(Loginrequest) returns (Loginresponse);
+  rpc Retry(Retryrequest) returns (Retryresponse);
+  rpc Accept(Acceptrequest) returns (Acceptresponse);
+  rpc IsAdmin(IsAdminrequest) returns (IsAdminresponse);
+}
+message Registrequest {
+  string email = 1;
+  string password = 2;
+}
+message Registresponse{
+  int64 userid = 1;
+}
+message Loginrequest{
+  string email = 1;
+  string password = 2;
+  string appid = 3;
+}
+message Loginresponse{
+  string token = 1;
+}
+message Acceptrequest{
+  string usercode = 1;
+}
+message Acceptresponse{
+  bool accresp = 1;
+}
+message Retryrequest{
+  int64 id = 1;
+}
+message Retryresponse{
+  bool retryresp = 1;
+}
+message IsAdminrequest{
+  string email = 1;
+}
+message IsAdminresponse{
+  bool adminresp = 1;
+}
