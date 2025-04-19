@@ -28,7 +28,6 @@ func Cfg_parser() Cfg {
 	var config_path string
 	flag.StringVar(&config_path, "config", "", "config file path")
 	flag.Parse()
-	config_path = "C:\\Golang_social_project\\GRPC_Service_sso\\config\\config.yaml"
 	if config_path == "" {
 		config_path = os.Getenv("CONFIG_PATH")
 		_, err := os.Stat(config_path)

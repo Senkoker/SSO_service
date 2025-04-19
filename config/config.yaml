@@ -1,0 +1,11 @@
+env: "local"
+database_url: "host=postgres_sso dbname=postgres user=postgres password=12345 port=5432"
+server:
+  mail_sender: "your@gmail.com"
+  mail_password: ""
+  timeout: 1h
+  idletimeout: 1h
+  token_ttl: 1h
+  url_accepter: "http://localhost:8082/accepter"
+  address: "localhost"
+  port: 8080

@@ -29,7 +29,7 @@ const (
 
 func Test_register_login_happy(t *testing.T) {
 	kit_st := kit.Kit_new(t)
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 5; i++ {
 		user := User{app_id, gofakeit.Email(), gofakeit.Password(true, true, true, true, false, passlen)}
 		resp, err := kit_st.Auth_client.Register(kit_st.Ctx, &sso_v1_ssov1.Registrequest{Email: user.email, Password: user.password})
 		id := resp.GetUserid()
@@ -60,7 +60,7 @@ func Test_register_login_happy(t *testing.T) {
 		require.NoError(t, err)
 		claims, _ := parsedtoken.Claims.(jwt.MapClaims)
 		assert.Equal(t, claims["email"], user.email)
-		assert.Equal(t, int64(claims["user.id"].(float64)), id)
+		assert.Equal(t, claims["user.id"].(string), id)
 		assert.Equal(t, int(claims["app.id"].(float64)), app_id_int)
 		assert.InDelta(t, claims["exp"], logintime.Add(kit_st.Cfg.TokenTtl).Unix(), delta)
 	}

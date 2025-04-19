@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+  db_sso:
+    image: postgres
+    container_name: postgres_sso
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    volumes:
+      - sso_db:/var/lib/postgresql/date
+    networks:
+      - project
+
+  db_post_comment:
+    image: postgres
+    container_name: postgres_post_comment
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    volumes:
+      - post_comment_db:/var/lib/postgresql/date
+    networks:
+      - project
+
+  sso_backend:
+    image: sso_backend
+    container_name: sso_backend
+    environment:
+      CONFIG_PATH: ./config.yaml
+      STORAGE_PATH: postgres://postgres:12345@postgres_sso:5432/postgres?sslmode=disable
+      MIGRATION_PATH: ./migration_db
+    networks:
+      - project
+
+  post_comment:
+    image: post_coment_backend
+    container_name: post_comment_backend
+    env_file:
+      - .env
+    networks:
+      - project
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - project
+    ports:
+      - 80:80
+
+volumes:
+  sso_db:
+    name: sso_db
+  post_comment_db:
+    name: post_comment_db  # Задайте имя тома
+
+networks:
+  project:
+    name: project  # Задайте имя сети
+
+
+
