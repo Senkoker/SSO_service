@@ -1,49 +1,48 @@
 package main
 
 import (
-	"database/sql"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"context"
+	"flag"
+	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
 	"log"
 )
 
 type Migration struct {
-	StoragePath    string `env:"STORAGE_PATH"`
+	Host           string `env:"HOST_POSTGRES"`
+	DbName         string `env:"DB_NAME"`
+	UserName       string `env:"USER_NAME"`
+	UserPass       string `env:"USER_PASS"`
 	MigrationsPath string `env:"MIGRATIONS_PATH"`
 }
 
+const (
+	driver  = "pgx"
+	address = "host=%s user=%s password=%s dbname=%s port=5432 sslmode=disable"
+)
+
 func main() {
 	var migration Migration
+	var command string
+	flag.StringVar(&command, "command", "", "write command for lead migration")
+	flag.Parse()
 	err := cleanenv.ReadEnv(&migration)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf(err.Error())
 	}
-	db, err := sql.Open("postgres", migration.StoragePath)
+	fmt.Println(command)
+	db, err := goose.OpenDBWithDriver(driver, fmt.Sprintf(address, migration.Host, migration.UserName, migration.UserPass, migration.DbName))
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	defer db.Close()
+	ctx := context.Background()
+	err = goose.RunContext(ctx, command, db, migration.MigrationsPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
-	if err != nil {
-		log.Fatal(err)
-	}
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://"+migration.MigrationsPath,
-		"postgres", driver)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatal(err)
-	}
-
-	log.Println("Migrations did run successfully")
+	log.Println("Migration completed successfully")
 }
-
-//err = m.Down()
-//if err != nil && err != migrate.ErrNoChange {
-//	log.Fatal(err)
-//}

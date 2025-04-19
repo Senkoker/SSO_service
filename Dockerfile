@@ -1,8 +1,8 @@
-FROM golang:1.23.4-alpine AS Builder
+FROM golang:1.23.4-alpine AS builder
 
 WORKDIR /usr/local/src
 
-RUN apk --no-cache add bash git make gcc gettext musl-dev
+RUN apk --no-cache add gcc gettext musl-dev
 
 COPY ./go.mod ./
 
@@ -12,18 +12,14 @@ RUN go mod download
 
 COPY ./ ./
 
-RUN go build -o ./bin/app/migration ./main/migrations/main.go
-
 RUN go build -o ./bin/app/cmd ./main/main.go
 
 FROM alpine
 
-COPY --from=builder /usr/local/src/bin/app/migration ./
+WORKDIR /service
 
 COPY --from=builder /usr/local/src/bin/app/cmd ./
 
-COPY ./skript.sh ./
+COPY ./config/config.yaml ./
 
-COPY ./internal/migration_db ./migration_db
-
-CMD ["./skript.sh"]
+CMD ["./cmd"]

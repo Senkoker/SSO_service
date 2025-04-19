@@ -1,0 +1,21 @@
+FROM golang:1.23.4-alpine
+
+WORKDIR /usr/local/src
+
+RUN apk --no-cache add bash git make gcc gettext musl-dev
+
+COPY ./go.mod ./
+
+COPY ./go.sum ./
+
+RUN go mod download
+
+COPY ./main/migrations/main.go ./
+
+RUN go build -o ./bin/app/cmd ./main.go
+
+COPY ./internal/migration_db ./bin/app/migration_db
+
+ENTRYPOINT ["./bin/app/cmd"]
+
+CMD ["--command=up"]
